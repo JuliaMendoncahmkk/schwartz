@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Carrinho</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .item {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .total {
+      font-size: 20px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    button {
+      background: #5a3726;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🛒 Seu Carrinho</h1>
+
+<div id="lista"></div>
+
+<div class="total" id="total"></div>
+
+<button onclick="finalizarWhats()">Finalizar no WhatsApp</button>
+
+
+<button onclick="limparCarrinho()">Limpar Carrinho</button>
+
+<script>
+function carregarCarrinho() {
+  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+  let lista = document.getElementById("lista");
+  let total = 0;
+
+  lista.innerHTML = "";
+
+  carrinho.forEach((item, index) => {
+    let subtotal = item.preco * item.qtd;
+    total += subtotal;
+
+    lista.innerHTML += `
+      <div class="item">
+        <span>${item.nome}</span>
+
+        <div>
+          <button onclick="diminuir(${index})">-</button>
+          ${item.qtd}
+          <button onclick="aumentar(${index})">+</button>
+        </div>
+
+        <span>R$ ${subtotal.toFixed(2)}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById("total").innerText =
+    "Total: R$ " + total.toFixed(2);
+}
+
+function aumentar(index) {
+  let carrinho = JSON.parse(localStorage.getItem("carrinho"));
+  carrinho[index].qtd += 1;
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+  carregarCarrinho();
+}
+
+function diminuir(index) {
+  let carrinho = JSON.parse(localStorage.getItem("carrinho"));
+
+  if (carrinho[index].qtd > 1) {
+    carrinho[index].qtd -= 1;
+  } else {
+    carrinho.splice(index, 1);
+  }
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+  carregarCarrinho();
+}
+
+function limparCarrinho() {
+  localStorage.removeItem("carrinho");
+  carregarCarrinho();
+}
+
+function finalizarWhats() {
+  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio!");
+    return;
+  }
+
+  let mensagem = "🛒 Pedido - Padaria Schwartz\n\n";
+  let total = 0;
+
+  carrinho.forEach(item => {
+    let subtotal = item.preco * item.qtd;
+    total += subtotal;
+
+    mensagem += `• ${item.nome} (x${item.qtd}) - R$ ${subtotal.toFixed(2)}\n`;
+  });
+
+  mensagem += `\nTotal: R$ ${total.toFixed(2)}`;
+
+  let numero = "5551991263705";
+
+  let url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
+  window.open(url, "_blank");
+}
+
+carregarCarrinho();
+</script>
+
+</body>
+</html>
